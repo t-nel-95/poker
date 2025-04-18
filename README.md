@@ -1,2 +1,2 @@
-# go_poker
+# poker
 Poker multiplayer game written in Go.
