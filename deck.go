@@ -103,9 +103,46 @@ func (c Card) String() string {
 	return fmt.Sprintf("%s of %s %s", c.Value, c.Suit, suitToUnicode(c.Suit))
 }
 
+// CardStack is a generic stack of cards with Push and Pop functionality
+type CardStack struct {
+	cards []Card
+}
+
+// Push adds a card to the top of the stack
+func (cs *CardStack) Push(card Card) {
+	// if len(d.Cards) == 52 {
+	// 	panic("The deck is already full!")
+	// }
+	cs.cards = append(cs.cards, card)
+}
+
+// Pop removes and returns the card from the top of the stack
+func (cs *CardStack) Pop() (Card, bool) {
+	n := len(cs.cards)
+	if n == 0 {
+		return Card{}, false // empty stack
+	}
+	card := cs.cards[n-1]
+	cs.cards = cs.cards[:n-1]
+	return card, true
+}
+
+// Count the number of cards in a CardStack
+func (cs *CardStack) Count() int {
+	return len(cs.cards)
+}
+
+// ForEach iterates over all cards in the stack and calls the provided function on each one.
+// It processes cards from bottom to top (index 0 to len-1)
+func (cs *CardStack) ForEach(callback func(Card)) {
+	for _, card := range cs.cards {
+		callback(card)
+	}
+}
+
 // Deck of cards structure
 type Deck struct {
-	Cards []Card
+	CardStack
 }
 
 // NewDeck creates a full 52-card deck, unshuffled
@@ -116,35 +153,16 @@ func NewDeck() *Deck {
 			cards = append(cards, Card{Suit: suit, Value: value})
 		}
 	}
-	return &Deck{cards}
-}
-
-// Push adds a card to the top of the stack
-func (d *Deck) Push(card Card) {
-	if len(d.Cards) == 52 {
-		panic("The deck is already full!")
-	}
-	d.Cards = append(d.Cards, card)
-}
-
-// Pop removes and returns the card from the top of the stack
-func (d *Deck) Pop() (Card, bool) {
-	n := len(d.Cards)
-	if n == 0 {
-		return Card{}, false // empty deck
-	}
-	card := d.Cards[n-1]
-	d.Cards = d.Cards[:n-1]
-	return card, true
+	return &Deck{CardStack{cards}}
 }
 
 // Shuffle randomizes the order of cards in the deck
 func (d *Deck) Shuffle() {
-	if len(d.Cards) != 52 {
-		panic(fmt.Sprintf("cannot shuffle: deck has %d cards, expected 52", len(d.Cards)))
+	if len(d.CardStack.cards) != 52 {
+		panic(fmt.Sprintf("cannot shuffle: deck has %d cards, expected 52", len(d.CardStack.cards)))
 	}
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(d.Cards), func(i, j int) {
-		d.Cards[i], d.Cards[j] = d.Cards[j], d.Cards[i]
+	rand.Shuffle(len(d.CardStack.cards), func(i, j int) {
+		d.CardStack.cards[i], d.CardStack.cards[j] = d.CardStack.cards[j], d.CardStack.cards[i]
 	})
 }
