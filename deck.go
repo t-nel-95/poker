@@ -116,7 +116,7 @@ func NewDeck() *Deck {
 			cards = append(cards, Card{Suit: suit, Value: value})
 		}
 	}
-	return &Deck{Cards: cards}
+	return &Deck{cards}
 }
 
 // Push adds a card to the top of the stack

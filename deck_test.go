@@ -1,6 +1,7 @@
 package poker
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -13,6 +14,10 @@ func TestCardString(t *testing.T) {
 
 func TestDefaultDeck(t *testing.T) {
 	deck := NewDeck()
+	numCards := len(deck.Cards)
+	if numCards != 52 {
+		t.Errorf("Number of cards should be 52 but is %s", fmt.Sprint(numCards))
+	}
 	firstCard, success := deck.Pop()
 	const expected = "KING of CLUBS ♣"
 	if firstCard.String() != expected {
