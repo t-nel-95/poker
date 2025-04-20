@@ -261,14 +261,34 @@ func (g *Game) PreFlop() {
 	//g.AddBetsToPots()
 }
 
+func (g *Game) canTransition() bool {
+	for _, player := range g.Players {
+		if player.PlayerStatus != Folded && player.PlayerStatus != Called && player.PlayerStatus != Checked {
+			fmt.Println("Not all players have called, checked, or folded.")
+			return false
+		}
+		if player.PlayerStatus != Folded && player.bet != g.highestBet {
+			fmt.Printf("Player %s's current bet: %d, Current highest bet: %d\n", player.Name, player.bet, g.highestBet)
+			fmt.Println("Not all active players have matched the highest bet.")
+			return false
+		}
+	}
+	return true
+}
+
 func (g *Game) Flop() {
 	if g.GameStatus != PreFlop {
 		fmt.Println("Game cannot transition to Flop. Current state:", g.GameStatus)
 		return
 	}
 
+	if !g.canTransition() {
+		return
+	}
+
 	// Transition to Flop state
 	g.GameStatus = Flop
+	g.highestBet = 0 // Reset highest bet
 	fmt.Println("Transitioning to Flop phase...")
 
 	// Deal three cards to the Community
@@ -297,8 +317,13 @@ func (g *Game) Turn() {
 		return
 	}
 
+	if !g.canTransition() {
+		return
+	}
+
 	// Transition to Turn state
 	g.GameStatus = Turn
+	g.highestBet = 0 // Reset highest bet
 	fmt.Println("Transitioning to Turn phase...")
 
 	// Deal one card to the Community
@@ -325,8 +350,13 @@ func (g *Game) River() {
 		return
 	}
 
+	if !g.canTransition() {
+		return
+	}
+
 	// Transition to River state
 	g.GameStatus = River
+	g.highestBet = 0 // Reset highest bet
 	fmt.Println("Transitioning to River phase...")
 
 	// Deal one card to the Community
@@ -353,8 +383,13 @@ func (g *Game) DetermineWinner() {
 		return
 	}
 
+	if !g.canTransition() {
+		return
+	}
+
 	// Transition to DetermineWinner state
 	g.GameStatus = DetermineWinner
+	g.highestBet = 0 // Reset highest bet
 	fmt.Println("Determining the winner(s)...")
 
 	// Evaluate hands and determine winners

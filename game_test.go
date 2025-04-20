@@ -98,6 +98,8 @@ func TestTurn(t *testing.T) {
 	p1.Call(game)  // Call the big blind
 	p2.Check(game) // Check the big blind
 	game.Flop()
+	p1.Check(game) // Check the flop
+	p2.Check(game) // Check the flop
 
 	// Turn phase
 	game.Turn()
@@ -226,6 +228,8 @@ func TestFlop(t *testing.T) {
 	game.Initialise()
 	game.AddPlayer("Alice")
 	game.AddPlayer("Bob")
+	p1 := game.getPlayer("Alice", 0) // Small blind
+	p2 := game.getPlayer("Bob", 1)   // Big blind
 
 	// Ensure players are ready
 	for i := range game.Players {
@@ -234,8 +238,9 @@ func TestFlop(t *testing.T) {
 
 	// Start the game and transition to PreFlop
 	game.StartGame()
-	p1 := game.getPlayer("Alice", 0) // Small blind
-	p1.Call(game)                    // Call the big blind
+
+	p1.Call(game)  // Call the big blind
+	p2.Check(game) // Check the big blind
 	game.PreFlop()
 
 	// Flop phase
