@@ -70,27 +70,16 @@ func (p *Player) StartTurn() {
 	p.PlayerStatus = Thinking
 }
 
-// Fold the player's hand and return the amount of money they they will forfeit to the pot
-func (p *Player) Fold() int {
-	// muckACard := func (c Card) {
-	// 	m.Push(c)
-	// }
-	// ///
-	// p.CardStack.ForEach(muckACard)
-	// ///
-	// for i := 0; i < p.CardStack.Count(); i++ {
-	// 	muckedCard, _ := p.CardStack.Pop()
-	// 	m.CardStack.Push(muckedCard)
-	// }
+// Fold the player's hand, their folded bet will be collected in the pot when the round ends
+func (p *Player) Fold() {
 	p.PlayerStatus = Folded
 	fmt.Printf("Player %s folds.\n", p.Name)
-	return p.bet
 }
 
 // Check if their current bet suffices, return whether they were allowed to check
-func (p *Player) Check(maxBet int) bool {
+func (p *Player) Check(g *Game) bool {
 	success := false
-	if p.bet == maxBet {
+	if p.bet == g.highestBet {
 		success = true
 		p.PlayerStatus = Checked
 		fmt.Printf("Player %s checks.\n", p.Name)
@@ -155,5 +144,6 @@ func (p *Player) Raise(amount int, g *Game) bool {
 	if success && p.bet > g.highestBet {
 		g.highestBet = p.bet
 	}
+	fmt.Printf("Highest bet is %d\n", g.highestBet)
 	return success
 }

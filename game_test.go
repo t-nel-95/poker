@@ -72,15 +72,9 @@ func TestPreFlop(t *testing.T) {
 		t.Errorf("Expected game status to be PreFlop, got %v", game.GameStatus)
 	}
 
-	if game.Community.Count() != 3 { // Updated to use Count()
-		t.Errorf("Expected 3 community cards, got %d", game.Community.Count())
-	}
-
-	// Ensure community cards are not nil
-	for _, card := range game.Community.cards {
-		if card == (Card{}) {
-			t.Error("Community card is uninitialized")
-		}
+	// Ensure no community cards are dealt
+	if game.Community.Count() != 0 {
+		t.Errorf("Expected 0 community cards, got %d", game.Community.Count())
 	}
 }
 
@@ -89,6 +83,8 @@ func TestTurn(t *testing.T) {
 	game := NewGame(1000, 50)
 	game.AddPlayer("Alice")
 	game.AddPlayer("Bob")
+	p1 := game.getPlayer("Alice", 0) // Small blind
+	p2 := game.getPlayer("Bob", 1)   // Big blind
 	game.Initialise()
 
 	// Ensure players are ready
@@ -99,6 +95,9 @@ func TestTurn(t *testing.T) {
 	// Start the game and transition to PreFlop
 	game.StartGame()
 	game.PreFlop()
+	p1.Call(game)  // Call the big blind
+	p2.Check(game) // Check the big blind
+	game.Flop()
 
 	// Turn phase
 	game.Turn()
@@ -124,6 +123,8 @@ func TestRiver(t *testing.T) {
 	game := NewGame(1000, 50)
 	game.AddPlayer("Alice")
 	game.AddPlayer("Bob")
+	p1 := game.getPlayer("Alice", 0) // Small blind
+	p2 := game.getPlayer("Bob", 1)   // Big blind
 	game.Initialise()
 
 	// Ensure players are ready
@@ -134,6 +135,11 @@ func TestRiver(t *testing.T) {
 	// Start the game and transition to Turn
 	game.StartGame()
 	game.PreFlop()
+	p1.Call(game)  // Call the big blind
+	p2.Check(game) // Check the big blind
+	game.Flop()
+	p1.Check(game) // Check the flop
+	p2.Check(game) // Check the flop
 	game.Turn()
 
 	// River phase
@@ -158,10 +164,13 @@ func TestRiver(t *testing.T) {
 func TestAddBetsToPots(t *testing.T) {
 	// Setup
 	game := NewGame(1000, 50)
+	game.Initialise()
 	game.AddPlayer("Alice")
 	game.AddPlayer("Bob")
 	game.AddPlayer("Charlie")
-	game.Initialise()
+	p1 := game.getPlayer("Alice", 0)   // Dealer
+	p2 := game.getPlayer("Bob", 1)     // Small blind
+	p3 := game.getPlayer("Charlie", 2) // Big blind
 
 	// Ensure players are ready
 	for i := range game.Players {
@@ -172,13 +181,26 @@ func TestAddBetsToPots(t *testing.T) {
 	game.StartGame()
 	game.PreFlop()
 
-	// Simulate bets using Raise method
-	game.Players[0].Raise(100, game)
-	game.Players[1].Call(game)
-	game.Players[2].Call(game)
+	// Call the blinds
+	p1.Call(game)      // Call the big blind
+	p2.Call(game)      // Call the small blind
+	p3.Raise(50, game) // Raise to $100
+	p1.Call(game)      // Call the raise
+	p2.Call(game)      // Call the raise
+	p3.Check(game)     // Check the raise
+
+	// Debug
+	for i, player := range game.Players {
+		t.Logf("Player %d (%s) bet: %d", i, player.Name, player.bet)
+	}
 
 	// Call AddBetsToPots
 	game.AddBetsToPots()
+
+	// Debug
+	for i, player := range game.Players {
+		t.Logf("Player %d (%s) bet: %d", i, player.Name, player.bet)
+	}
 
 	// Assertions
 	if len(game.Pots) != 1 {
@@ -194,6 +216,44 @@ func TestAddBetsToPots(t *testing.T) {
 	for i, player := range game.Players {
 		if player.bet != 0 {
 			t.Errorf("Expected player %d bet to be 0, got %d", i, player.bet)
+		}
+	}
+}
+
+func TestFlop(t *testing.T) {
+	// Setup
+	game := NewGame(1000, 50)
+	game.Initialise()
+	game.AddPlayer("Alice")
+	game.AddPlayer("Bob")
+
+	// Ensure players are ready
+	for i := range game.Players {
+		game.Players[i].IsReady = true
+	}
+
+	// Start the game and transition to PreFlop
+	game.StartGame()
+	p1 := game.getPlayer("Alice", 0) // Small blind
+	p1.Call(game)                    // Call the big blind
+	game.PreFlop()
+
+	// Flop phase
+	game.Flop()
+
+	// Assertions
+	if game.GameStatus != Flop {
+		t.Errorf("Expected game status to be Flop, got %v", game.GameStatus)
+	}
+
+	if game.Community.Count() != 3 {
+		t.Errorf("Expected 3 community cards, got %d", game.Community.Count())
+	}
+
+	// Ensure the community cards are not nil
+	for _, card := range game.Community.cards {
+		if card == (Card{}) {
+			t.Error("Community card is uninitialized")
 		}
 	}
 }

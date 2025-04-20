@@ -11,10 +11,10 @@ type Suit int
 
 // Suit enums
 const (
-	Spades	Suit = iota	// 0
-	Hearts              // 1
-	Diamonds            // 2
-	Clubs               // 3
+	Spades   Suit = iota // 0
+	Hearts               // 1
+	Diamonds             // 2
+	Clubs                // 3
 )
 
 // String representation of a card Suit
@@ -43,19 +43,19 @@ type Value int
 
 // Value enums
 const (
-	Ace	Value = iota + 1	// 1
-	Two						// 2
-	Three					// 3
-	Four					// 4
-	Five					// 5
-	Six						// 6
-	Seven					// 7
-	Eight					// 8
-	Nine					// 9
-	Ten						// 10
-	Jack					// 11
-	Queen					// 12
-	King					// 13
+	Ace   Value = iota + 1 // 1
+	Two                    // 2
+	Three                  // 3
+	Four                   // 4
+	Five                   // 5
+	Six                    // 6
+	Seven                  // 7
+	Eight                  // 8
+	Nine                   // 9
+	Ten                    // 10
+	Jack                   // 11
+	Queen                  // 12
+	King                   // 13
 )
 
 // String representation of a card value
@@ -118,12 +118,11 @@ func (cs *CardStack) Push(card Card) {
 
 // Pop removes and returns the card from the top of the stack
 func (cs *CardStack) Pop() (Card, bool) {
-	n := len(cs.cards)
-	if n == 0 {
+	if len(cs.cards) == 0 {
 		return Card{}, false // empty stack
 	}
-	card := cs.cards[n-1]
-	cs.cards = cs.cards[:n-1]
+	card := cs.cards[0] // Removes the first card
+	cs.cards = cs.cards[1:]
 	return card, true
 }
 
@@ -147,13 +146,15 @@ type Deck struct {
 
 // NewDeck creates a full 52-card deck, unshuffled
 func NewDeck() *Deck {
-	var cards []Card
+	//var cards []Card
+	d := &Deck{}
 	for suit := Spades; suit <= Clubs; suit++ {
 		for value := Ace; value <= King; value++ {
-			cards = append(cards, Card{Suit: suit, Value: value})
+			d.Push(Card{Suit: suit, Value: value})
+			//cards = append(cards, Card{Suit: suit, Value: value})
 		}
 	}
-	return &Deck{CardStack{cards}}
+	return d
 }
 
 // Shuffle randomizes the order of cards in the deck

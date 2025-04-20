@@ -136,7 +136,7 @@ func (g *Game) AddBetsToPots() {
 		}
 
 		switch player.PlayerStatus {
-		case Called:
+		case Called, Checked: // Handle both Called and Checked statuses
 			// Add their bet to the latest side pot they are eligible for, if side pots exist
 			addedToSidePot := false
 			for j := len(g.Pots) - 1; j > 0; j-- { // Skip the main pot (index 0)
@@ -245,7 +245,7 @@ func containsPlayer(players []Player, player Player) bool {
 	return false
 }
 
-// PreFlop transitions the game to the PreFlop state and deals three community cards
+// PreFlop transitions the game to the PreFlop state
 func (g *Game) PreFlop() {
 	if g.GameStatus != StartGame {
 		fmt.Println("Game cannot transition to PreFlop. Current state:", g.GameStatus)
@@ -255,6 +255,21 @@ func (g *Game) PreFlop() {
 	// Transition to PreFlop state
 	g.GameStatus = PreFlop
 	fmt.Println("Transitioning to PreFlop phase...")
+
+	// Add bets to pots if all players have called, folded, or gone all in
+	// There should be no bets at this point
+	//g.AddBetsToPots()
+}
+
+func (g *Game) Flop() {
+	if g.GameStatus != PreFlop {
+		fmt.Println("Game cannot transition to Flop. Current state:", g.GameStatus)
+		return
+	}
+
+	// Transition to Flop state
+	g.GameStatus = Flop
+	fmt.Println("Transitioning to Flop phase...")
 
 	// Deal three cards to the Community
 	for i := 0; i < 3; i++ {
@@ -277,7 +292,7 @@ func (g *Game) PreFlop() {
 
 // Turn transitions the game to the Turn state and deals one additional community card
 func (g *Game) Turn() {
-	if g.GameStatus != PreFlop {
+	if g.GameStatus != Flop {
 		fmt.Println("Game cannot transition to Turn. Current state:", g.GameStatus)
 		return
 	}
