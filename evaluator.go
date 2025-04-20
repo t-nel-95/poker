@@ -44,13 +44,27 @@ func (h Hand) String() string {
 // BestHand evaluates the best possible 5-card hand from 7 cards
 func BestHand(cards []Card) Hand {
 	combinations := generate5CardCombos(cards)
-	var best Hand
+	bestChan := make(chan Hand, len(combinations)) // Buffered channel to collect results
+
+	// Worker function to evaluate a combination
+	evaluateCombo := func(combo []Card, ch chan<- Hand) {
+		ch <- evaluateFiveCardHand(combo)
+	}
+
+	// Launch goroutines to evaluate combinations concurrently
 	for _, combo := range combinations {
-		current := evaluateFiveCardHand(combo)
+		go evaluateCombo(combo, bestChan)
+	}
+
+	// Collect results and determine the best hand
+	var best Hand
+	for range combinations {
+		current := <-bestChan
 		if compare := compareRankedHands(current, best); compare > 0 {
 			best = current
 		}
 	}
+
 	return best
 }
 
