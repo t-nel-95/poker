@@ -19,8 +19,10 @@ func TestPlayerDeal(t *testing.T) {
 }
 
 func TestRaise(t *testing.T) {
-	p := NewPlayer("Bob", 1000)
-	success := p.Raise(100)
+	g := NewGame(1000, 50)     // Create a new game instance with starting money and big blind
+	g.AddPlayer("Bob")         // Add a player to the game
+	p := g.getPlayer("Bob", 0) // Get the player instance from the game
+	success := g.Players[0].Raise(100, g)
 	if !success {
 		t.Error("Expected player with a sufficent balance to be able to Raise")
 	}
@@ -30,7 +32,7 @@ func TestRaise(t *testing.T) {
 	if p.bet != 100 {
 		t.Errorf("Expected bet to be $100 after raising by $100 but got $%d", p.bet)
 	}
-	success = p.Raise(2000)
+	success = p.Raise(2000, g)
 	if success {
 		t.Error("Expected player with insufficient balance to be unable to Raise")
 	}
@@ -43,7 +45,7 @@ func TestPlayerCheck(t *testing.T) {
 	g := NewGame(startingMoney, bigBlind)
 	g.AddPlayer("Bob")
 	g.AddPlayer("Mike")
-	g.Players[0].Raise(100)
+	g.Players[0].Raise(100, g)
 	if g.Players[1].Check(maxBet) {
 		t.Error("Expected a player with insufficent bet to be unable to check")
 	}
@@ -53,8 +55,10 @@ func TestPlayerCheck(t *testing.T) {
 }
 
 func TestPlayerFold(t *testing.T) {
-	p := NewPlayer("Bob", 1000)
-	p.Raise(100)
+	g := NewGame(1000, 50)     // Create a new game instance with starting money and big blind
+	g.AddPlayer("Bob")         // Add a player to the game
+	p := g.getPlayer("Bob", 0) // Get the player instance from the game
+	p.Raise(100, g)
 	amountForfeit := p.Fold()
 	if amountForfeit != 100 {
 		t.Errorf("Expected a player with a bet of $100 to fold $100 but instead got $%d", amountForfeit)
@@ -65,10 +69,11 @@ func TestPlayerFold(t *testing.T) {
 }
 
 func TestPlayerCall(t *testing.T) {
+	g := NewGame(1000, 50) // Create a new game instance with starting money and big blind
 	p := NewPlayer("Bob", 1000)
-	maxBet := 100
+	g.highestBet = 100
 	// Case 1
-	p.Call(maxBet)
+	p.Call(g)
 	if p.bet != 100 {
 		t.Errorf("Expected a player with no bet calling a $100 bet to have a resulting bet of $100 but got $%d", p.bet)
 	}
@@ -76,8 +81,8 @@ func TestPlayerCall(t *testing.T) {
 		t.Errorf("Expected a player with a call of $100 from a initial balance of $1000 to have a resulting balance of $900 but got %d", p.money)
 	}
 	//Case 2
-	maxBet = 200
-	p.Call(maxBet)
+	g.highestBet = 200
+	p.Call(g)
 	if p.bet != 200 {
 		t.Errorf("Expected a player with an existing bet of $100 calling a $200 bet to have a resulting bet of $200 but got $%d", p.bet)
 	}
@@ -85,8 +90,8 @@ func TestPlayerCall(t *testing.T) {
 		t.Errorf("Expected a player with a call of $200 from a initial balance of $1000 to have a resulting balance of $800 but got %d", p.money)
 	}
 	// Case 3
-	maxBet = 1000
-	p.Call(1000)
+	g.highestBet = 1000
+	p.Call(g)
 	if p.bet != 1000 {
 		t.Errorf("Expected a player with an existing bet of $200 calling a $1000 bet to have a resulting bet of $1000 but got $%d", p.bet)
 	}
@@ -98,8 +103,8 @@ func TestPlayerCall(t *testing.T) {
 	}
 	// Case 4
 	p = NewPlayer("Mike", 1000)
-	maxBet = 2000
-	p.Call(maxBet)
+	g.highestBet = 2000
+	p.Call(g)
 	if p.bet != 1000 {
 		t.Errorf("Expected a player with an existing bet of $0 calling a $2000 bet with a balance of $1000 to have a resulting bet of $1000 but got $%d", p.bet)
 	}
