@@ -89,7 +89,9 @@ func TestBestHandRankings(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test // capture range variable
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel() // allow this test case to run in parallel
 			result := BestHand(test.cards)
 			if result.Rank != test.expected {
 				t.Errorf("expected %v, got %v", test.expected, result.Rank)

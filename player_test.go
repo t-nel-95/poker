@@ -38,16 +38,16 @@ func TestRaise(t *testing.T) {
 
 func TestPlayerCheck(t *testing.T) {
 	maxBet := 100
-	p1 := NewPlayer("Bob", 1000)
-	p2 := NewPlayer("Mike", 1000)
-	g := NewGame()
-	g.AddPlayer(*p1)
-	g.AddPlayer(*p2)
-	g.players[0].Raise(100)
-	if g.players[1].Check(maxBet) {
+	startingMoney := 1000
+	bigBlind := 50
+	g := NewGame(startingMoney, bigBlind)
+	g.AddPlayer("Bob")
+	g.AddPlayer("Mike")
+	g.Players[0].Raise(100)
+	if g.Players[1].Check(maxBet) {
 		t.Error("Expected a player with insufficent bet to be unable to check")
 	}
-	if !g.players[0].Check(maxBet) {
+	if !g.Players[0].Check(maxBet) {
 		t.Error("Expected a player with sufficent bet to be able to check")
 	}
 }
