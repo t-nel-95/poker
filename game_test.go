@@ -262,3 +262,63 @@ func TestFlop(t *testing.T) {
 		}
 	}
 }
+
+func TestPlayerElimination(t *testing.T) {
+	// Create a new game
+	game := NewGame(100, 10)
+	game.Initialise()
+	// Add players
+	game.AddPlayer("Alice")
+	game.AddPlayer("Bob")
+	game.AddPlayer("Charlie")
+	p1 := game.getPlayer("Alice", 0)   // Dealer
+	p2 := game.getPlayer("Bob", 1)     // Small blind
+	p3 := game.getPlayer("Charlie", 2) // Big blind
+	// Ensure players are ready
+	for i := range game.Players {
+		game.Players[i].IsReady = true
+	}
+	game.StartGame()
+	p1.Call(game)  // Call the big blind
+	p2.Call(game)  // Call the small blind
+	p3.Check(game) // Check the big blind
+
+	game.PreFlop()
+	p2.Check(game) // Check the big blind
+	p3.Check(game) // Check the big blind
+	p1.Check(game) // Check the big blind
+
+	game.Flop()
+	p2.Check(game) // Check the big blind
+	p3.Check(game) // Check the big blind
+	p1.Check(game) // Check the big blind
+
+	game.Turn()
+	p2.Check(game) // Check the big blind
+	p3.Check(game) // Check the big blind
+	p1.Check(game) // Check the big blind
+
+	game.River()
+	p2.Check(game) // Check the big blind
+	p3.Check(game) // Check the big blind
+	p1.Check(game) // Check the big blind
+
+	// Simulate a game where Bob and Charlie lose all their money
+	game.Players[0].money = 50 // Alice has some money left
+	game.Players[1].money = 0  // Bob is out of money
+	game.Players[2].money = 0  // Charlie is out of money
+
+	// TODO : rig the game so that Alice wins
+
+	// Call DetermineWinner to trigger elimination logic
+	game.DetermineWinner()
+
+	// Check that only Alice remains in the game
+	if len(game.Players) != 1 {
+		t.Fatalf("Expected 1 player remaining, got %d", len(game.Players))
+	}
+
+	if game.Players[0].Name != "Alice" {
+		t.Fatalf("Expected remaining player to be Alice, got %s", game.Players[0].Name)
+	}
+}

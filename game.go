@@ -423,6 +423,25 @@ func (g *Game) DetermineWinner() {
 		}
 	}
 
+	// Eliminate players with zero balance
+	eliminatedPlayers := []string{}
+	for i := 0; i < len(g.Players); {
+		if g.Players[i].money <= 0 {
+			eliminatedPlayers = append(eliminatedPlayers, g.Players[i].Name)
+			g.Players = append(g.Players[:i], g.Players[i+1:]...)
+		} else {
+			i++
+		}
+	}
+
+	// Announce eliminated players
+	if len(eliminatedPlayers) > 0 {
+		fmt.Println("The following players have been eliminated:")
+		for _, name := range eliminatedPlayers {
+			fmt.Println(name)
+		}
+	}
+
 	// Print final player balances
 	fmt.Println("Final player balances:")
 	for _, player := range g.Players {
